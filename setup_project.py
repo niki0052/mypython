@@ -1,4 +1,4 @@
-# Fixed with DeepSeek
+
 """
 Скрипт для автоматической настройки проекта pre_recipe_blog
 Запустите: python setup_project.py
