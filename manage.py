@@ -16,3 +16,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+    # This file is used to run administrative tasks like running the development server, applying migrations, creating superusers, etc. It sets up the environment and calls Django's command-line utility.
+    #https://github.com/niki0052/mypython.git
