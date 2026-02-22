@@ -130,7 +130,7 @@ for filepath, content in files.items():
     with open(full_path, 'w', encoding='utf-8') as f:
         f.write(content.strip())
 
-    print(f"✓ Создан: {filepath}")
+    print(f"[OK] Создан: {filepath}")
 
 print("\nПроект настроен! Теперь выполните:")
 print("1. pip install django pillow")

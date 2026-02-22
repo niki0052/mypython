@@ -1,3 +1,4 @@
+# Fixed with DeepSeek
 """
 Скрипт для автоматической настройки проекта pre_recipe_blog
 Запустите: python setup_project.py
@@ -14,10 +15,10 @@ def create_file(filepath, content):
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
-        print(f"✓ Создан: {filepath}")
+        print(f"[OK] Создан: {filepath}")
         return True
     except Exception as e:
-        print(f"✗ Ошибка при создании {filepath}: {e}")
+        print(f"[ERROR] Ошибка при создании {filepath}: {e}")
         return False
 
 
@@ -27,13 +28,13 @@ def run_command(command, description):
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"✓ {description} успешно")
+            print(f"[OK] {description} успешно")
             return True
         else:
-            print(f"✗ Ошибка: {result.stderr}")
+            print(f"[ERROR] Ошибка: {result.stderr}")
             return False
     except Exception as e:
-        print(f"✗ Ошибка: {e}")
+        print(f"[ERROR] Ошибка: {e}")
         return False
 
 
@@ -56,7 +57,7 @@ def main():
 
     for folder in folders:
         os.makedirs(folder, exist_ok=True)
-        print(f"✓ Создана папка: {folder}")
+        print(f"[OK] Создана папка: {folder}")
 
     #requirements.txt
     requirements = """Django==5.0
