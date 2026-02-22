@@ -3,47 +3,64 @@
 {% block title %}Мой профиль{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow mb-4">
-                <div class="card-body text-center">
-                    {% if user.profile.profile_image %}
-                        <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" 
-                             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                    {% else %}
-                        <div class="rounded-circle mb-3 mx-auto" style="width: 150px; height: 150px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-person-circle" style="font-size: 100px; color: #adb5bd;"></i>
-                        </div>
-                    {% endif %}
-                    
-                    <h3>{{ user.username }}</h3>
-                    
-                    {% if user.profile.bio %}
-                    <p class="text-muted mt-2">{{ user.profile.bio }}</p>
-                    {% else %}
-                    <p class="text-muted mt-2">Биография не указана.</p>
-                    {% endif %}
-                    
-                    <div class="text-muted small mt-3">
-                        <i class="bi bi-envelope"></i> {{ user.email }}<br>
-                        <i class="bi bi-calendar"></i> Присоединился {{ user.date_joined|date:"F Y" }}
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center text-md-start mb-3 mb-md-0">
+                {% if user.profile.profile_image %}
+                    <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" class="profile-avatar">
+                {% else %}
+                    <div class="profile-avatar d-flex align-items-center justify-content-center mx-auto mx-md-0" style="background-color: rgba(255,255,255,0.2);">
+                        <i class="bi bi-person" style="font-size: 4rem;"></i>
                     </div>
-                    
-                    <a href="{% url 'edit-profile' %}" class="btn btn-outline-success mt-3">
-                        <i class="bi bi-pencil"></i> Редактировать профиль
-                    </a>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <h1 class="h3 mb-2">{{ user.username }}</h1>
+                {% if user.profile.bio %}
+                <p class="mb-3 opacity-75">{{ user.profile.bio }}</p>
+                {% else %}
+                <p class="mb-3 opacity-75 fst-italic">Биография не указана</p>
+                {% endif %}
+                <div class="d-flex gap-3 flex-wrap">
+                    <span><i class="bi bi-envelope me-1"></i> {{ user.email }}</span>
+                    <span><i class="bi bi-calendar me-1"></i> Присоединился {{ user.date_joined|date:"F Y" }}</span>
                 </div>
             </div>
+            <div class="col-md-3 text-center text-md-end mt-3 mt-md-0">
+                <a href="{% url 'edit-profile' %}" class="btn btn-light">
+                    <i class="bi bi-pencil me-1"></i> Редактировать профиль
+                </a>
+            </div>
         </div>
-        
-        <div class="col-md-8">
-            <div class="card shadow mb-4">
-                <div class="card-header">
-                    <h4>
-                        <i class="bi bi-book"></i> Мои рецепты
-                        <span class="badge bg-success ms-2">{{ recipes.count }}</span>
+        <div class="profile-stats justify-content-center justify-content-md-start">
+            <div class="profile-stat">
+                <div class="value">{{ recipes.count }}</div>
+                <div class="label">Рецептов</div>
+            </div>
+            <div class="profile-stat">
+                <div class="value">{{ user.profile.followers_count }}</div>
+                <div class="label">Подписчиков</div>
+            </div>
+            <div class="profile-stat">
+                <div class="value">{{ user.profile.following_count }}</div>
+                <div class="label">Подписок</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- My Recipes -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-book me-2"></i>Мои рецепты
                     </h4>
+                    <span class="badge bg-primary rounded-pill">{{ recipes.count }}</span>
                 </div>
                 
                 <div class="card-body">
@@ -51,29 +68,43 @@
                         <div class="row">
                             {% for recipe in recipes %}
                             <div class="col-md-6 mb-4">
-                                <div class="card recipe-card h-100 shadow-sm">
-                                    <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+                                <div class="card recipe-card h-100">
+                                    <div class="card-img-wrapper">
+                                        {% if recipe.image %}
+                                        <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+                                        {% else %}
+                                        <div class="recipe-img bg-light d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                     <div class="card-body">
                                         <h5 class="card-title">
-                                            <a href="{% url 'recipe-detail' recipe.slug %}" class="text-decoration-none text-dark">
-                                                {{ recipe.title }}
-                                            </a>
+                                            <a href="{% url 'recipe-detail' recipe.slug %}">{{ recipe.title }}</a>
                                         </h5>
-                                        <p class="card-text text-muted">{{ recipe.description|truncatewords:15 }}</p>
+                                        <p class="card-text text-muted small">{{ recipe.description|truncatewords:12 }}</p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <small class="text-muted">
                                                 <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
                                             </small>
-                                            <span class="badge badge-{{ recipe.difficulty }}">{{ recipe.get_difficulty_display }}</span>
+                                            <span class="badge {% if recipe.difficulty == 'easy' %}badge-easy{% elif recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %}">
+                                                {{ recipe.get_difficulty_display }}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="card-footer bg-white">
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d.m.Y" }}
-                                        </small>
-                                        <div class="mt-2">
-                                            <a href="{% url 'update-recipe' recipe.slug %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
-                                            <a href="{% url 'delete-recipe' recipe.slug %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d.m.Y" }}
+                                            </small>
+                                            <div>
+                                                <a href="{% url 'update-recipe' recipe.slug %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{% url 'delete-recipe' recipe.slug %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -81,12 +112,64 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="text-center text-muted py-5">
-                            <i class="bi bi-emoji-smile" style="font-size: 48px; margin-bottom: 1rem;"></i>
-                            <p>Вы ещё не опубликовали ни одного рецепта.</p>
-                            <a href="{% url 'create-recipe' %}" class="btn btn-success">Создать первый рецепт</a>
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="bi bi-journal-plus text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <p class="text-muted mb-3">Вы ещё не опубликовали ни одного рецепта.</p>
+                            <a href="{% url 'create-recipe' %}" class="btn btn-success">
+                                <i class="bi bi-plus-circle me-1"></i> Создать первый рецепт
+                            </a>
                         </div>
                     {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'create-recipe' %}" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-2"></i>Новый рецепт
+                        </a>
+                        <a href="{% url 'favorites' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-bookmark-heart me-2"></i>Избранное
+                        </a>
+                        <a href="{% url 'cookbook-list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-journal-bookmark me-2"></i>Кулинарные книги
+                        </a>
+                        <a href="{% url 'shopping-list' %}" class="btn btn-outline-info">
+                            <i class="bi bi-cart me-2"></i>Список покупок
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Социальные связи</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around text-center">
+                        <a href="{% url 'following' %}" class="text-decoration-none">
+                            <div class="text-primary">
+                                <strong class="d-block fs-4">{{ user.profile.following_count }}</strong>
+                                <small class="text-muted">Подписок</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'followers' %}" class="text-decoration-none">
+                            <div class="text-success">
+                                <strong class="d-block fs-4">{{ user.profile.followers_count }}</strong>
+                                <small class="text-muted">Подписчиков</small>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

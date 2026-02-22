@@ -22,22 +22,42 @@
                         
                         <div class="mb-3">
                             <label for="id_email" class="form-label">Email</label>
-                            <input type="email" name="email" value="{{ user.email }}" class="form-control" required>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in user_form.email.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
                             <label for="id_first_name" class="form-label">Имя</label>
-                            <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control">
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in user_form.first_name.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
                             <label for="id_last_name" class="form-label">Фамилия</label>
-                            <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control">
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in user_form.last_name.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
                             <label for="id_bio" class="form-label">Биография</label>
-                            <textarea name="bio" class="form-control" rows="4" placeholder="Расскажите о себе...">{{ user.profile.bio }}</textarea>
+                            {{ profile_form.bio }}
+                            {% if profile_form.bio.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in profile_form.bio.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
@@ -55,7 +75,12 @@
                                 </div>
                             </div>
                             {% endif %}
-                            <input type="file" name="profile_image" id="id_profile_image" class="form-control" accept="image/*">
+                            {{ profile_form.profile_image }}
+                            {% if profile_form.profile_image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in profile_form.profile_image.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
                             <small class="text-muted">Выберите фото для обрезки (квадратный формат)</small>
                         </div>
                         

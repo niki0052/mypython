@@ -60,7 +60,8 @@ def recipe_detail(request, slug):
             parent_id = request.POST.get('parent_id')
             if parent_id:
                 try:
-                    parent_comment = Comment.objects.get(id=parent_id)
+                    # Проверяем, что родительский комментарий принадлежит этому рецепту
+                    parent_comment = Comment.objects.get(id=parent_id, recipe=recipe)
                     comment.parent = parent_comment
                 except Comment.DoesNotExist:
                     pass

@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from .models import Profile, Follow, Notification
+from .forms import UserUpdateForm, ProfileUpdateForm
 from recipes.models import Recipe
 
 
@@ -40,31 +41,27 @@ def profile(request):
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        # Обновление данных пользователя
-        email = request.POST.get('email', '')
-        first_name = request.POST.get('first_name', '')
-        last_name = request.POST.get('last_name', '')
-        bio = request.POST.get('bio', '')
-        profile_image = request.FILES.get('profile_image')
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(
+            request.POST,
+            request.FILES,
+            instance=request.user.profile
+        )
         
-        user = request.user
-        user.email = email
-        user.first_name = first_name
-        user.last_name = last_name
-        user.save()
-        
-        # Обновление профиля
-        profile = user.profile
-        profile.bio = bio
-        if profile_image:
-            profile.profile_image = profile_image
-        profile.save()
-        
-        messages.success(request, 'Профиль успешно обновлён!')
-        return redirect('profile')
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Профиль успешно обновлён!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
     
     context = {
-        'user': request.user,
+        'user_form': user_form,
+        'profile_form': profile_form,
     }
     return render(request, 'users/edit_profile.html', context)
 
