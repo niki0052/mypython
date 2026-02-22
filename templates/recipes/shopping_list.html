@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Список покупок{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-shopping-cart"></i> {{ shopping_list.name }}</h1>
+        <div>
+            <span class="badge bg-primary me-2">{{ shopping_list.items_count }} элементов</span>
+            <span class="badge bg-success">{{ shopping_list.unchecked_count }} осталось</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Добавить элемент</span>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="row g-2">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <input type="text" name="name" class="form-control" placeholder="Название продукта" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="quantity" class="form-control" placeholder="Количество (опционально)">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if items %}
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Список покупок</span>
+                    <form action="{% url 'clear-shopping-list' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Очистить весь список?')">
+                            <i class="fas fa-trash"></i> Очистить
+                        </button>
+                    </form>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for item in items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center {% if item.is_checked %}list-group-item-success{% endif %}">
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   class="form-check-input item-checkbox" 
+                                   data-item-id="{{ item.id }}"
+                                   {% if item.is_checked %}checked{% endif %}>
+                            <label class="form-check-label {% if item.is_checked %}text-decoration-line-through text-muted{% endif %}">
+                                {{ item.name }}
+                                {% if item.quantity %}
+                                <span class="text-muted">({{ item.quantity }})</span>
+                                {% endif %}
+                            </label>
+                            {% if item.recipe %}
+                            <br><small class="text-muted"><i class="fas fa-utensils"></i> {{ item.recipe.title }}</small>
+                            {% endif %}
+                        </div>
+                        <form action="{% url 'delete-shopping-item' item.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% else %}
+            <div class="text-center py-5 bg-light rounded">
+                <i class="fas fa-shopping-basket fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Список покупок пуст</h4>
+                <p class="text-muted">Добавьте продукты вручную или из рецепта</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i> Подсказка
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Вы можете добавить ингредиенты из любого рецепта в список покупок.
+                    </p>
+                    <ol class="small text-muted">
+                        <li>Откройте страницу рецепта</li>
+                        <li>Нажмите "Добавить в список покупок"</li>
+                        <li>Выберите нужные ингредиенты</li>
+                    </ol>
+                    <hr>
+                    <p class="card-text small">
+                        <i class="fas fa-check-square text-success"></i> Отмеченные элементы считаются купленными
+                    </p>
+                </div>
+            </div>
+
+            {% if shopping_list.items.filter %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie"></i> Статистика
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-2" style="height: 25px;">
+                        {% widthratio shopping_list.items_count|default:1 shopping_list.unchecked_count|default:0 100 as purchased_percent %}
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ purchased_percent }}%">
+                            {{ purchased_percent }}% куплено
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-0">
+                        Осталось купить: {{ shopping_list.unchecked_count }} из {{ shopping_list.items_count }}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const itemId = this.dataset.itemId;
+        fetch(`/shopping-list/item/${itemId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

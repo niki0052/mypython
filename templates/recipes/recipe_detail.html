@@ -43,23 +43,101 @@
                     </div>
                 </div>
                 
-                <div class="d-flex mb-3">
-                    <span class="badge {% if recipe.difficulty == 'easy' %}badge-easy{% elif recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %} me-2">
+                <div class="d-flex mb-3 flex-wrap">
+                    <span class="badge {% if recipe.difficulty == 'easy' %}badge-easy{% elif recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %} me-2 mb-1">
                         {{ recipe.get_difficulty_display }}
                     </span>
-                    <span class="badge bg-secondary me-2">
+                    <span class="badge bg-secondary me-2 mb-1">
                         <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
                     </span>
                     {% if recipe.category %}
-                    <span class="badge bg-info">
+                    <span class="badge bg-info me-2 mb-1">
                         {{ recipe.category.name }}
+                    </span>
+                    {% endif %}
+                    {% if recipe.servings %}
+                    <span class="badge bg-primary me-2 mb-1">
+                        <i class="bi bi-people"></i> {{ recipe.servings }} порций
                     </span>
                     {% endif %}
                 </div>
                 
+                <!-- Rating -->
+                <div class="mb-3">
+                    {% if recipe.average_rating > 0 %}
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= recipe.average_rating %}
+                                <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="text-muted">{{ recipe.average_rating|floatformat:1 }} / 5 ({{ recipe.rating_count }} оценок)</span>
+                    </div>
+                    {% else %}
+                    <span class="text-muted"><i class="far fa-star"></i> Пока нет оценок</span>
+                    {% endif %}
+                </div>
+                
                 <p class="card-text">{{ recipe.description }}</p>
+                
+                <!-- Action Buttons -->
+                {% if user.is_authenticated %}
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <a href="{% url 'add-recipe-to-shopping-list' recipe.slug %}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-shopping-cart"></i> В список покупок
+                    </a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cookbookModal">
+                        <i class="fas fa-book"></i> В кулинарную книгу
+                    </button>
+                </div>
+                {% endif %}
             </div>
         </div>
+        
+        <!-- Nutrition Info -->
+        {% if recipe.calories > 0 or recipe.proteins > 0 or recipe.fats > 0 or recipe.carbohydrates > 0 %}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-fire"></i> Пищевая ценность (на порцию)</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-3">
+                        <div class="border rounded p-2">
+                            <i class="fas fa-fire-alt text-danger fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ recipe.calories_per_serving }}</h5>
+                            <small class="text-muted">ккал</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="border rounded p-2">
+                            <i class="fas fa-drumstick-bite text-warning fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ recipe.proteins|floatformat:1 }}</h5>
+                            <small class="text-muted">белки (г)</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="border rounded p-2">
+                            <i class="fas fa-cheese text-success fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ recipe.fats|floatformat:1 }}</h5>
+                            <small class="text-muted">жиры (г)</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="border rounded p-2">
+                            <i class="fas fa-bread-slice text-primary fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ recipe.carbohydrates|floatformat:1 }}</h5>
+                            <small class="text-muted">углеводы (г)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         
         <!-- Ingredients -->
         <div class="card mb-4">
@@ -73,7 +151,38 @@
             </div>
         </div>
         
-        <!-- Instructions -->
+        <!-- Recipe Steps -->
+        {% if steps %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list-ol"></i> Шаги приготовления</h5>
+            </div>
+            <div class="card-body">
+                {% for step in steps %}
+                <div class="d-flex mb-4 {% if not forloop.last %}border-bottom pb-4{% endif %}">
+                    <div class="me-3">
+                        <span class="badge bg-primary rounded-circle p-2" style="font-size: 1.2rem;">{{ step.step_number }}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        {% if step.title %}
+                        <h6 class="mb-2">{{ step.title }}</h6>
+                        {% endif %}
+                        <p class="mb-2">{{ step.description }}</p>
+                        {% if step.duration > 0 %}
+                        <small class="text-muted"><i class="fas fa-clock"></i> {{ step.duration }} мин</small>
+                        {% endif %}
+                    </div>
+                    {% if step.image %}
+                    <div class="ms-3">
+                        <img src="{{ step.image.url }}" alt="Шаг {{ step.step_number }}" class="rounded" style="max-width: 150px; max-height: 100px; object-fit: cover;">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Instructions (fallback) -->
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0"><i class="bi bi-list-ol"></i> Инструкции</h5>
@@ -84,6 +193,30 @@
                 </div>
             </div>
         </div>
+        {% endif %}
+        
+        <!-- Rating Form -->
+        {% if user.is_authenticated %}
+        <div class="card mb-4">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="fas fa-star"></i> Оценить рецепт</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'rate-recipe' recipe.slug %}" class="d-flex align-items-center gap-2">
+                    {% csrf_token %}
+                    <div class="rating-stars">
+                        {% for i in "54321" %}
+                        <input type="radio" name="score" value="{{ i }}" id="star{{ i }}" {% if user_rating and user_rating.score == i|add:0 %}checked{% endif %} class="d-none">
+                        <label for="star{{ i }}" class="rating-label">
+                            <i class="far fa-star fa-2x text-warning"></i>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-warning">Оценить</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
         
         <!-- Comments Section -->
         <div class="card">
@@ -113,7 +246,36 @@
                         <strong>{{ comment.user.username }}</strong>
                         <small class="text-muted">{{ comment.created_at|timesince }} назад</small>
                     </div>
-                    <p class="mb-0 mt-2">{{ comment.content }}</p>
+                    <p class="mb-2 mt-2">{{ comment.content }}</p>
+                    
+                    <!-- Reply Button -->
+                    {% if user.is_authenticated %}
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleReplyForm({{ comment.id }})">
+                        <i class="fas fa-reply"></i> Ответить
+                    </button>
+                    
+                    <!-- Reply Form (hidden by default) -->
+                    <div id="replyForm{{ comment.id }}" class="mt-3" style="display: none;">
+                        <form method="post" action="{% url 'reply-comment' recipe.slug comment.id %}">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" name="content" class="form-control" placeholder="Ваш ответ..." required>
+                                <button type="submit" class="btn btn-primary">Отправить</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Replies -->
+                    {% for reply in comment.replies.all %}
+                    <div class="ms-4 mt-3 p-2 bg-light rounded">
+                        <div class="d-flex justify-content-between">
+                            <strong class="text-primary">{{ reply.user.username }}</strong>
+                            <small class="text-muted">{{ reply.created_at|timesince }} назад</small>
+                        </div>
+                        <p class="mb-0 mt-1">{{ reply.content }}</p>
+                    </div>
+                    {% endfor %}
                 </div>
                 {% empty %}
                 <p class="text-muted">Комментариев пока нет. Станьте первым!</p>
@@ -196,4 +358,111 @@
         </div>
     </div>
 </div>
+
+<!-- Cookbook Modal -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="cookbookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить в кулинарную книгу</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Выберите кулинарную книгу для добавления рецепта:</p>
+                <div class="list-group">
+                    {% for cookbook in user.cookbooks.all %}
+                    <form action="{% url 'cookbook-add-recipe' cookbook.id recipe.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            {{ cookbook.name }}
+                            <i class="fas fa-plus text-success"></i>
+                        </button>
+                    </form>
+                    {% empty %}
+                    <div class="alert alert-info">
+                        У вас пока нет кулинарных книг. 
+                        <a href="{% url 'cookbook-create' %}">Создать книгу</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleReplyForm(commentId) {
+    const form = document.getElementById('replyForm' + commentId);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+// Rating stars hover effect
+document.querySelectorAll('.rating-label').forEach(label => {
+    label.addEventListener('mouseenter', function() {
+        const input = this.previousElementSibling;
+        const value = input.value;
+        document.querySelectorAll('.rating-label').forEach(l => {
+            const i = l.previousElementSibling.value;
+            if (i >= value) {
+                l.querySelector('i').classList.remove('far');
+                l.querySelector('i').classList.add('fas');
+            }
+        });
+    });
+    
+    label.addEventListener('mouseleave', function() {
+        document.querySelectorAll('.rating-label').forEach(l => {
+            const input = l.previousElementSibling;
+            if (!input.checked) {
+                l.querySelector('i').classList.remove('fas');
+                l.querySelector('i').classList.add('far');
+            }
+        });
+    });
+});
+
+// Keep checked star filled
+document.querySelectorAll('.rating-stars input').forEach(input => {
+    input.addEventListener('change', function() {
+        document.querySelectorAll('.rating-label').forEach(l => {
+            l.querySelector('i').classList.remove('fas');
+            l.querySelector('i').classList.add('far');
+        });
+        
+        const value = this.value;
+        document.querySelectorAll('.rating-label').forEach(l => {
+            const i = l.previousElementSibling.value;
+            if (i >= value) {
+                l.querySelector('i').classList.remove('far');
+                l.querySelector('i').classList.add('fas');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.rating-stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating-label {
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.rating-label:hover i,
+.rating-stars input:checked ~ label i {
+    color: #ffc107 !important;
+}
+</style>
 {% endblock %}

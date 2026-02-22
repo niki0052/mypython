@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cookbook.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cookbook-list' %}">Кулинарные книги</a></li>
+            <li class="breadcrumb-item active">{{ cookbook.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="row g-0">
+            <div class="col-md-4">
+                {% if cookbook.cover_image %}
+                <img src="{{ cookbook.cover_image.url }}" class="img-fluid rounded-start h-100" alt="{{ cookbook.name }}" style="object-fit: cover;">
+                {% else %}
+                <div class="bg-secondary d-flex align-items-center justify-content-center rounded-start h-100" style="min-height: 250px;">
+                    <i class="fas fa-book fa-5x text-white"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="card-title">{{ cookbook.name }}</h1>
+                            <p class="card-text text-muted">
+                                <i class="fas fa-user"></i> {{ cookbook.user.username }}
+                                <span class="ms-3">
+                                    {% if cookbook.is_public %}
+                                    <span class="badge bg-success"><i class="fas fa-globe"></i> Публичная</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary"><i class="fas fa-lock"></i> Приватная</span>
+                                    {% endif %}
+                                </span>
+                            </p>
+                        </div>
+                        {% if cookbook.user == request.user %}
+                        <div class="btn-group">
+                            <a href="{% url 'cookbook-update' cookbook.id %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'cookbook-delete' cookbook.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="card-text">{{ cookbook.description|default:"Описание отсутствует" }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-utensils"></i> {{ cookbook.recipes_count }} рецептов
+                            <span class="ms-3"><i class="fas fa-calendar"></i> Создана {{ cookbook.created_at|date:"d.m.Y" }}</span>
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mb-4"><i class="fas fa-utensils"></i> Рецепты в книге</h2>
+
+    {% if recipes %}
+    <div class="row">
+        {% for recipe in recipes %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 recipe-card">
+                {% if recipe.image %}
+                <a href="{% url 'recipe-detail' recipe.slug %}">
+                    <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+                </a>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'recipe-detail' recipe.slug %}" class="text-decoration-none">{{ recipe.title }}</a>
+                    </h5>
+                    <p class="card-text text-muted small">
+                        <i class="fas fa-clock"></i> {{ recipe.cooking_time }} мин
+                        <span class="ms-2"><i class="fas fa-signal"></i> {{ recipe.get_difficulty_display }}</span>
+                    </p>
+                    {% if recipe.average_rating > 0 %}
+                    <div class="mb-2">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= recipe.average_rating %}
+                            <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                            <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <small class="text-muted">({{ recipe.rating_count }})</small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if cookbook.user == request.user %}
+                <div class="card-footer bg-transparent">
+                    <form action="{% url 'cookbook-remove-recipe' cookbook.id recipe.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Удалить рецепт из книги?')">
+                            <i class="fas fa-minus"></i> Удалить из книги
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-light rounded">
+        <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">В этой книге пока нет рецептов</h4>
+        {% if cookbook.user == request.user %}
+        <p class="text-muted">Добавьте рецепты из избранного или через страницу рецепта</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

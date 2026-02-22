@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои кулинарные книги{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-book"></i> Мои кулинарные книги</h1>
+        <a href="{% url 'cookbook-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Создать книгу
+        </a>
+    </div>
+
+    {% if cookbooks %}
+    <div class="row">
+        {% for cookbook in cookbooks %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if cookbook.cover_image %}
+                <img src="{{ cookbook.cover_image.url }}" class="card-img-top" alt="{{ cookbook.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-book fa-4x text-white"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ cookbook.name }}</h5>
+                    <p class="card-text text-muted">{{ cookbook.description|truncatechars:100 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary">{{ cookbook.recipes_count }} рецептов</span>
+                        {% if cookbook.is_public %}
+                        <span class="badge bg-success">Публичная</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Приватная</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'cookbook-detail' cookbook.id %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                            <i class="fas fa-eye"></i> Открыть
+                        </a>
+                        <a href="{% url 'cookbook-update' cookbook.id %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'cookbook-delete' cookbook.id %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-book fa-5x text-muted mb-3"></i>
+        <h3 class="text-muted">У вас пока нет кулинарных книг</h3>
+        <p class="text-muted">Создайте свою первую книгу для сохранения любимых рецептов!</p>
+        <a href="{% url 'cookbook-create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus"></i> Создать книгу
+        </a>
+    </div>
+    {% endif %}
+
+    {% if public_cookbooks %}
+    <hr class="my-5">
+    <h2 class="mb-4"><i class="fas fa-globe"></i> Публичные книги сообщества</h2>
+    <div class="row">
+        {% for cookbook in public_cookbooks %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if cookbook.cover_image %}
+                <img src="{{ cookbook.cover_image.url }}" class="card-img-top" alt="{{ cookbook.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-book fa-4x text-white"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ cookbook.name }}</h5>
+                    <p class="card-text text-muted">от {{ cookbook.user.username }}</p>
+                    <span class="badge bg-primary">{{ cookbook.recipes_count }} рецептов</span>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'cookbook-detail' cookbook.id %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-eye"></i> Открыть
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

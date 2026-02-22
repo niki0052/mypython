@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить книгу - {{ cookbook.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Подтверждение удаления</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-4x text-danger mb-3"></i>
+                    <h5>Вы уверены, что хотите удалить кулинарную книгу?</h5>
+                    <p class="text-muted">
+                        <strong>"{{ cookbook.name }}"</strong><br>
+                        {{ cookbook.recipes_count }} рецептов будет удалено из книги
+                    </p>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Да, удалить
+                            </button>
+                            <a href="{% url 'cookbook-detail' cookbook.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
