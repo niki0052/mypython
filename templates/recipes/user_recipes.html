@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Рецепты пользователя {{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    {% if profile_user.profile.profile_image %}
+                        <img src="{{ profile_user.profile.profile_image.url }}" alt="{{ profile_user.username }}" 
+                             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle mb-3" style="width: 150px; height: 150px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person-circle" style="font-size: 100px; color: #adb5bd;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h3>{{ profile_user.username }}</h3>
+                    
+                    {% if profile_user.profile.bio %}
+                    <p class="text-muted mt-2">{{ profile_user.profile.bio }}</p>
+                    {% endif %}
+                    
+                    <div class="text-muted small mt-3">
+                        <i class="bi bi-calendar"></i> Присоединился {{ profile_user.date_joined|date:"F Y" }}
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="d-flex justify-content-center gap-4 mt-3 mb-3">
+                        <div class="text-center">
+                            <a href="{% url 'followers' %}" class="text-decoration-none text-dark">
+                                <strong>{{ profile_user.profile.followers_count }}</strong>
+                                <div class="small text-muted">подписчиков</div>
+                            </a>
+                        </div>
+                        <div class="text-center">
+                            <a href="{% url 'following' %}" class="text-decoration-none text-dark">
+                                <strong>{{ profile_user.profile.following_count }}</strong>
+                                <div class="small text-muted">подписок</div>
+                            </a>
+                        </div>
+                        <div class="text-center">
+                            <strong>{{ recipes.count }}</strong>
+                            <div class="small text-muted">рецептов</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Follow Button -->
+                    {% if user.is_authenticated and user != profile_user %}
+                    <form method="post" action="{% url 'follow-user' profile_user.username %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn {% if is_following %}btn-outline-danger{% else %}btn-success{% endif %} w-100">
+                            {% if is_following %}
+                                <i class="bi bi-person-dash"></i> Отписаться
+                            {% else %}
+                                <i class="bi bi-person-plus"></i> Подписаться
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h4>
+                        <i class="bi bi-book"></i> Рецепты пользователя {{ profile_user.username }}
+                        <span class="badge bg-success ms-2">{{ recipes.count }}</span>
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    {% if recipes %}
+                        <div class="row">
+                            {% for recipe in recipes %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card recipe-card h-100 shadow-sm">
+                                    <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a href="{% url 'recipe-detail' recipe.slug %}" class="text-decoration-none text-dark">
+                                                {{ recipe.title }}
+                                            </a>
+                                        </h5>
+                                        <p class="card-text text-muted">{{ recipe.description|truncatewords:15 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
+                                            </small>
+                                            <span class="badge badge-{{ recipe.difficulty }}">{{ recipe.get_difficulty_display }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d.m.Y" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-emoji-smile" style="font-size: 48px; margin-bottom: 1rem;"></i>
+                            <p>Этот пользователь ещё не опубликовал ни одного рецепта.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recipes.has_other_pages %}
+<nav aria-label="Навигация по страницам рецептов">
+    <ul class="pagination justify-content-center mt-4">
+        {% if recipes.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">Первая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.previous_page_number }}">Предыдущая</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item disabled">
+            <span class="page-link">Страница {{ recipes.number }} из {{ recipes.paginator.num_pages }}</span>
+        </li>
+        
+        {% if recipes.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.next_page_number }}">Следующая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.paginator.num_pages }}">Последняя</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

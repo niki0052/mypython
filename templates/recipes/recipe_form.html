@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Редактировать рецепт{% else %}Создать рецепт{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">{% if form.instance.pk %}Редактировать рецепт{% else %}Создать новый рецепт{% endif %}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {% if field.name == 'image' %}
+                            {% if form.instance.image %}
+                            <div class="mb-2">
+                                <img src="{{ form.instance.image.url }}" alt="Текущее фото" 
+                                     class="rounded current-image-preview" style="max-width: 200px; max-height: 150px; object-fit: cover;">
+                            </div>
+                            {% endif %}
+                            {{ field }}
+                            <small class="text-muted">Выберите фото для обрезки (горизонтальный формат 16:9)</small>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger">
+                            {% for error in field.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if field.help_text and field.name != 'image' %}
+                        <small class="text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% if form.instance.pk %}{% url 'recipe-detail' form.instance.slug %}{% else %}{% url 'home' %}{% endif %}" 
+                           class="btn btn-secondary me-md-2">Отмена</a>
+                        <button type="submit" class="btn btn-success">
+                            {% if form.instance.pk %}Обновить рецепт{% else %}Создать рецепт{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize image cropping for recipe image (16:9 aspect ratio)
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                initCropper(this, 16/9); // 16:9 aspect ratio for recipe images
+            }
+        });
+    }
+</script>
+{% endblock %}

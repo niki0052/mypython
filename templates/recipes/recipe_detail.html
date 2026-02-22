@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ recipe.title }} - Блог рецептов{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Recipe Header -->
+        <div class="card mb-4">
+            {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.title }}" style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="card-title">{{ recipe.title }}</h1>
+                        <p class="text-muted">Автор: {{ recipe.author.username }} • {{ recipe.created_at|date:"d F Y" }}</p>
+                    </div>
+                    <div class="d-flex">
+                        <!-- Like Button -->
+                        {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'like-recipe' recipe.slug %}" class="me-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if user_liked %}btn-danger{% else %}btn-outline-danger{% endif %}" id="likeBtn">
+                                <i class="bi bi-heart{% if user_liked %}-fill{% endif %}"></i>
+                                <span id="likeCount">{{ recipe.likes.count }}</span>
+                            </button>
+                        </form>
+                        <!-- Favorite Button -->
+                        <form method="post" action="{% url 'favorite-recipe' recipe.slug %}" class="me-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if user_favorited %}btn-warning{% else %}btn-outline-warning{% endif %}" id="favoriteBtn">
+                                <i class="bi bi-bookmark{% if user_favorited %}-fill{% endif %}"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        <!-- Edit/Delete buttons for author -->
+                        {% if user == recipe.author %}
+                        <a href="{% url 'update-recipe' recipe.slug %}" class="btn btn-outline-primary me-2">Редактировать</a>
+                        <a href="{% url 'delete-recipe' recipe.slug %}" class="btn btn-outline-danger">Удалить</a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex mb-3">
+                    <span class="badge {% if recipe.difficulty == 'easy' %}badge-easy{% elif recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %} me-2">
+                        {{ recipe.get_difficulty_display }}
+                    </span>
+                    <span class="badge bg-secondary me-2">
+                        <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
+                    </span>
+                    {% if recipe.category %}
+                    <span class="badge bg-info">
+                        {{ recipe.category.name }}
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <p class="card-text">{{ recipe.description }}</p>
+            </div>
+        </div>
+        
+        <!-- Ingredients -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Ингредиенты</h5>
+            </div>
+            <div class="card-body">
+                <div class="ingredients-content">
+                    {{ recipe.ingredients|linebreaks }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-list-ol"></i> Инструкции</h5>
+            </div>
+            <div class="card-body">
+                <div class="instructions-content">
+                    {{ recipe.instructions|linebreaks }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Комментарии ({{ comments.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                <!-- Comment Form -->
+                <form method="post" action="{% url 'add-comment' recipe.slug %}" class="mb-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ comment_form.content }}
+                    </div>
+                    <button type="submit" class="btn btn-success">Добавить комментарий</button>
+                </form>
+                {% else %}
+                <div class="alert alert-info">
+                    Пожалуйста, <a href="{% url 'login' %}">войдите</a>, чтобы оставить комментарий.
+                </div>
+                {% endif %}
+                
+                <!-- Comments List -->
+                {% for comment in comments %}
+                <div class="comment mb-3 pb-3 border-bottom">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ comment.user.username }}</strong>
+                        <small class="text-muted">{{ comment.created_at|timesince }} назад</small>
+                    </div>
+                    <p class="mb-0 mt-2">{{ comment.content }}</p>
+                </div>
+                {% empty %}
+                <p class="text-muted">Комментариев пока нет. Станьте первым!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+         <!-- Recipe Stats -->
+         <div class="card mb-4">
+             <div class="card-header bg-light">
+                 <h5 class="mb-0"><i class="bi bi-info-circle"></i> Информация о рецепте</h5>
+             </div>
+             <div class="card-body">
+                 <ul class="list-unstyled">
+                     <li class="mb-2"><i class="bi bi-person me-2"></i> Автор: <a href="{% url 'user-recipes' recipe.author.username %}">{{ recipe.author.username }}</a></li>
+                     <li class="mb-2"><i class="bi bi-clock me-2"></i> Время приготовления: {{ recipe.cooking_time }} минут</li>
+                     <li class="mb-2"><i class="bi bi-bar-chart me-2"></i> Сложность: {{ recipe.get_difficulty_display }}</li>
+                     <li class="mb-2"><i class="bi bi-calendar me-2"></i> Опубликовано: {{ recipe.created_at|date:"d.m.Y" }}</li>
+                     <li class="mb-2"><i class="bi bi-heart me-2"></i> Лайки: {{ recipe.likes.count }}</li>
+                     <li><i class="bi bi-bookmark-heart me-2"></i> В избранном: {{ recipe.favorites.count }}</li>
+                 </ul>
+             </div>
+         </div>
+
+         <!-- Tags -->
+         {% if recipe.tags.all %}
+         <div class="card mb-4">
+             <div class="card-header bg-light">
+                 <h5 class="mb-0"><i class="bi bi-tags"></i> Теги</h5>
+             </div>
+             <div class="card-body">
+                 {% for tag in recipe.tags.all %}
+                 <span class="badge bg-primary me-1 mb-1">
+                     <i class="bi bi-tag"></i> {{ tag.name }}
+                 </span>
+                 {% endfor %}
+             </div>
+         </div>
+         {% endif %}
+        
+        <!-- Recommended Recipes -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-star"></i> Рекомендуем</h5>
+            </div>
+            <div class="card-body">
+                {% for rec_recipe in recommended %}
+                <div class="d-flex mb-3">
+                    {% if rec_recipe.image %}
+                    <img src="{{ rec_recipe.image.url }}" alt="{{ rec_recipe.title }}" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                    {% endif %}
+                    <div>
+                        <h6 class="mb-1">{{ rec_recipe.title|truncatewords:4 }}</h6>
+                        <small class="text-muted">{{ rec_recipe.category.name }}</small>
+                        <br>
+                        <a href="{% url 'recipe-detail' rec_recipe.slug %}" class="btn btn-sm btn-outline-success mt-1">Смотреть</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">Рекомендаций пока нет.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Categories -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-folder"></i> Категории</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap">
+                    {% for category in categories %}
+                    <a href="{% url 'category-posts' category.slug %}" class="btn btn-outline-success btn-sm m-1">{{ category.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

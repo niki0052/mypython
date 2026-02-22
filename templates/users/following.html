@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои подписки{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="bi bi-people text-primary"></i> Мои подписки
+        <span class="badge bg-primary">{{ following.paginator.count }}</span>
+    </h2>
+
+    {% if following %}
+    <div class="row">
+        {% for follow in following %}
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    {% if follow.following.profile.profile_image %}
+                    <img src="{{ follow.following.profile.profile_image.url }}" alt="{{ follow.following.username }}" 
+                         class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" 
+                         style="width: 80px; height: 80px;">
+                        <i class="bi bi-person text-muted" style="font-size: 2rem;"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="card-title">
+                        <a href="{% url 'user-recipes' follow.following.username %}" class="text-decoration-none text-dark">
+                            {{ follow.following.username }}
+                        </a>
+                    </h5>
+                    
+                    {% if follow.following.profile.bio %}
+                    <p class="card-text text-muted small">{{ follow.following.profile.bio|truncatewords:15 }}</p>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-center gap-3 text-muted small mb-3">
+                        <span><i class="bi bi-book"></i> {{ follow.following.recipe_set.count }} рецептов</span>
+                        <span><i class="bi bi-people"></i> {{ follow.following.profile.followers_count }} подписчиков</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'user-recipes' follow.following.username %}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-eye"></i> Смотреть рецепты
+                        </a>
+                        <form method="post" action="{% url 'follow-user' follow.following.username %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="bi bi-person-dash"></i> Отписаться
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar"></i> Подписан с {{ follow.created_at|date:"d.m.Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if following.has_other_pages %}
+    <nav aria-label="Навигация по страницам">
+        <ul class="pagination justify-content-center mt-4">
+            {% if following.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">Первая</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ following.previous_page_number }}">Предыдущая</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item disabled">
+                <span class="page-link">Страница {{ following.number }} из {{ following.paginator.num_pages }}</span>
+            </li>
+            
+            {% if following.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ following.next_page_number }}">Следующая</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ following.paginator.num_pages }}">Последняя</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-people" style="font-size: 64px; color: #dee2e6;"></i>
+        <h4 class="mt-3 text-muted">Вы пока ни на кого не подписаны</h4>
+        <p class="text-muted">Подпишитесь на авторов, чтобы следить за их новыми рецептами</p>
+        <a href="{% url 'home' %}" class="btn btn-success mt-2">
+            <i class="bi bi-search"></i> Найти авторов
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Избранные рецепты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="bi bi-bookmark-heart text-danger"></i> Избранные рецепты
+        <span class="badge bg-danger">{{ favorites.paginator.count }}</span>
+    </h2>
+
+    {% if favorites %}
+    <div class="row">
+        {% for favorite in favorites %}
+        <div class="col-md-4 mb-4">
+            <div class="card recipe-card h-100 shadow-sm">
+                {% if favorite.recipe.image %}
+                <img src="{{ favorite.recipe.image.url }}" class="card-img-top recipe-img" alt="{{ favorite.recipe.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'recipe-detail' favorite.recipe.slug %}" class="text-decoration-none text-dark">
+                            {{ favorite.recipe.title }}
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted">{{ favorite.recipe.description|truncatewords:15 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ favorite.recipe.cooking_time }} мин
+                        </small>
+                        <span class="badge {% if favorite.recipe.difficulty == 'easy' %}badge-easy{% elif favorite.recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %}">
+                            {{ favorite.recipe.get_difficulty_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-person"></i> 
+                            <a href="{% url 'user-recipes' favorite.recipe.author.username %}" class="text-decoration-none">
+                                {{ favorite.recipe.author.username }}
+                            </a>
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar"></i> {{ favorite.created_at|date:"d.m.Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if favorites.has_other_pages %}
+    <nav aria-label="Навигация по страницам">
+        <ul class="pagination justify-content-center mt-4">
+            {% if favorites.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">Первая</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ favorites.previous_page_number }}">Предыдущая</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item disabled">
+                <span class="page-link">Страница {{ favorites.number }} из {{ favorites.paginator.num_pages }}</span>
+            </li>
+            
+            {% if favorites.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ favorites.next_page_number }}">Следующая</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ favorites.paginator.num_pages }}">Последняя</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-bookmark-heart" style="font-size: 64px; color: #dee2e6;"></i>
+        <h4 class="mt-3 text-muted">У вас пока нет избранных рецептов</h4>
+        <p class="text-muted">Добавляйте рецепты в избранное, чтобы не потерять их</p>
+        <a href="{% url 'home' %}" class="btn btn-success mt-2">
+            <i class="bi bi-search"></i> Найти рецепты
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

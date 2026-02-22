@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Рецепты категории {{ category.name }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Рецепты категории {{ category.name }}</h1>
+<p class="text-muted mb-4">{{ category.description }}</p>
+
+<div class="row">
+    {% for recipe in recipes %}
+    <div class="col-md-4 mb-4">
+        <div class="card recipe-card h-100">
+            {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ recipe.title }}</h5>
+                <p class="card-text text-muted">{{ recipe.description|truncatewords:15 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge {% if recipe.difficulty == 'easy' %}badge-easy{% elif recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %}">
+                        {{ recipe.difficulty|title }}
+                    </span>
+                    <small class="text-muted">{{ recipe.cooking_time }} мин</small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'recipe-detail' recipe.slug %}" class="btn btn-outline-success btn-sm">Смотреть рецепт</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            В этой категории пока нет рецептов. 
+            {% if user.is_authenticated %}
+            <a href="{% url 'create-recipe' %}">Станьте первым, кто добавит!</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if recipes.has_other_pages %}
+<nav aria-label="Навигация по страницам рецептов">
+    <ul class="pagination justify-content-center mt-4">
+        {% if recipes.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">Первая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.previous_page_number }}">Предыдущая</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item disabled">
+            <span class="page-link">Страница {{ recipes.number }} из {{ recipes.paginator.num_pages }}</span>
+        </li>
+        
+        {% if recipes.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.next_page_number }}">Следующая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.paginator.num_pages }}">Последняя</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

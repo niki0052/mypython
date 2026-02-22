@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    {% if user.profile.profile_image %}
+                        <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" 
+                             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle mb-3 mx-auto" style="width: 150px; height: 150px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person-circle" style="font-size: 100px; color: #adb5bd;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <h3>{{ user.username }}</h3>
+                    
+                    {% if user.profile.bio %}
+                    <p class="text-muted mt-2">{{ user.profile.bio }}</p>
+                    {% else %}
+                    <p class="text-muted mt-2">Биография не указана.</p>
+                    {% endif %}
+                    
+                    <div class="text-muted small mt-3">
+                        <i class="bi bi-envelope"></i> {{ user.email }}<br>
+                        <i class="bi bi-calendar"></i> Присоединился {{ user.date_joined|date:"F Y" }}
+                    </div>
+                    
+                    <a href="{% url 'edit-profile' %}" class="btn btn-outline-success mt-3">
+                        <i class="bi bi-pencil"></i> Редактировать профиль
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h4>
+                        <i class="bi bi-book"></i> Мои рецепты
+                        <span class="badge bg-success ms-2">{{ recipes.count }}</span>
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    {% if recipes %}
+                        <div class="row">
+                            {% for recipe in recipes %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card recipe-card h-100 shadow-sm">
+                                    <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a href="{% url 'recipe-detail' recipe.slug %}" class="text-decoration-none text-dark">
+                                                {{ recipe.title }}
+                                            </a>
+                                        </h5>
+                                        <p class="card-text text-muted">{{ recipe.description|truncatewords:15 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
+                                            </small>
+                                            <span class="badge badge-{{ recipe.difficulty }}">{{ recipe.get_difficulty_display }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d.m.Y" }}
+                                        </small>
+                                        <div class="mt-2">
+                                            <a href="{% url 'update-recipe' recipe.slug %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+                                            <a href="{% url 'delete-recipe' recipe.slug %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-emoji-smile" style="font-size: 48px; margin-bottom: 1rem;"></i>
+                            <p>Вы ещё не опубликовали ни одного рецепта.</p>
+                            <a href="{% url 'create-recipe' %}" class="btn btn-success">Создать первый рецепт</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

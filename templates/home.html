@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Blog - Welcome</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .hero {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 50px;
+            border-radius: 0 0 20px 20px;
+        }
+        .feature-card {
+            transition: transform 0.3s;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .step {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-success" href="/">
+                <i class="bi bi-egg-fried me-2"></i>Recipe Blog
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#setup">Setup</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4">🍳 Welcome to Recipe Blog</h1>
+            <p class="lead mb-4">A Django-powered platform for sharing and discovering amazing recipes</p>
+            <div class="mt-4">
+                <a href="/admin" class="btn btn-light btn-lg me-3">
+                    <i class="bi bi-shield-lock"></i> Go to Admin
+                </a>
+                <a href="#features" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-list-stars"></i> Explore Features
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="container" id="features">
+        <h2 class="text-center mb-5">🌟 Project Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-journal-text text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title">Recipe Management</h4>
+                        <p class="card-text">Create, edit, and delete recipes with images, ingredients, and instructions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-chat-heart text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title">Likes & Comments</h4>
+                        <p class="card-text">Users can like recipes and leave comments to interact with the community.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-person-badge text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="card-title">User Profiles</h4>
+                        <p class="card-text">User registration, login, profiles, and personal recipe collections.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Instructions -->
+    <div class="container mt-5" id="setup">
+        <h2 class="text-center mb-5">🚀 Getting Started</h2>
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="step">
+                    <h4><span class="badge bg-success me-2">1</span> Create Superuser</h4>
+                    <p>Run this command to create an admin account:</p>
+                    <pre class="bg-light p-3 rounded"><code>python manage.py createsuperuser</code></pre>
+                </div>
+
+                <div class="step">
+                    <h4><span class="badge bg-success me-2">2</span> Access Admin Panel</h4>
+                    <p>Go to <a href="/admin" class="text-success">/admin</a> and log in with your credentials.</p>
+                </div>
+
+                <div class="step">
+                    <h4><span class="badge bg-success me-2">3</span> Create Apps</h4>
+                    <p>Create the recipe and user apps:</p>
+                    <pre class="bg-light p-3 rounded"><code>python manage.py startapp recipes
+python manage.py startapp users</code></pre>
+                </div>
+
+                <div class="step">
+                    <h4><span class="badge bg-success me-2">4</span> Configure Settings</h4>
+                    <p>Add 'recipes' and 'users' to INSTALLED_APPS in settings.py</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-egg-fried"></i> Recipe Blog</h5>
+                    <p class="text-light-emphasis">A Django project for recipe sharing</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="text-light-emphasis mb-0">
+                        Built with Django 5.2 & Bootstrap 5
+                    </p>
+                </div>
+            </div>
+            <hr class="text-light">
+            <div class="text-center text-light-emphasis">
+                <p class="mb-0">Project is successfully running! 🎉</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

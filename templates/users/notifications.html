@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-bell"></i> Уведомления
+                    </h4>
+                    <span class="badge bg-light text-dark">{{ notifications.paginator.count }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                        <div class="notification-item p-3 border-bottom {% if not notification.is_read %}bg-light{% endif %}" id="notification-{{ notification.id }}">
+                            <div class="d-flex align-items-start">
+                                <div class="me-3">
+                                    {% if notification.notification_type == 'follow' %}
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-person-plus"></i>
+                                        </div>
+                                    {% elif notification.notification_type == 'like' %}
+                                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-heart"></i>
+                                        </div>
+                                    {% elif notification.notification_type == 'comment' %}
+                                        <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-chat-left-text"></i>
+                                        </div>
+                                    {% elif notification.notification_type == 'recipe' %}
+                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-book"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-bell"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ notification.title }}</strong>
+                                            <p class="mb-1 text-muted small">{{ notification.message }}</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> {{ notification.created_at|timesince }} назад
+                                            </small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deleteNotification({{ notification.id }})">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                    {% if notification.link %}
+                                    <a href="{{ notification.link }}" class="btn btn-sm btn-outline-success mt-2">
+                                        <i class="bi bi-arrow-right"></i> Перейти
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-bell-slash" style="font-size: 64px; color: #dee2e6;"></i>
+                            <h5 class="mt-3 text-muted">Нет уведомлений</h5>
+                            <p class="text-muted">Здесь будут отображаться ваши уведомления</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if notifications.has_other_pages %}
+            <nav aria-label="Навигация по страницам" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if notifications.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">Первая</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notifications.previous_page_number }}">Предыдущая</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item disabled">
+                        <span class="page-link">Страница {{ notifications.number }} из {{ notifications.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if notifications.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notifications.next_page_number }}">Следующая</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notifications.paginator.num_pages }}">Последняя</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteNotification(notificationId) {
+    fetch(`/users/notifications/${notificationId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`notification-${notificationId}`).remove();
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

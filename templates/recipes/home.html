@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Блог рецептов{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section bg-success text-white rounded p-5 mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-4 fw-bold">Откройте удивительные рецепты</h1>
+            <p class="lead">Делитесь любимыми рецептами со всем миром и открывайте новые кулинарные идеи.</p>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg">Присоединиться к сообществу</a>
+            {% else %}
+            <a href="{% url 'create-recipe' %}" class="btn btn-light btn-lg">Поделиться рецептом</a>
+            {% endif %}
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="bi bi-egg-fried" style="font-size: 8rem;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Recipes -->
+<h2 class="mb-4">Избранные рецепты</h2>
+<div class="row mb-5">
+    {% for recipe in featured_recipes %}
+    <div class="col-md-4 mb-4">
+        <div class="card recipe-card h-100">
+            {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+            {% else %}
+            <div class="recipe-img bg-light d-flex align-items-center justify-content-center">
+                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <span class="badge {% if recipe.difficulty == 'easy' %}badge-easy{% elif recipe.difficulty == 'medium' %}badge-medium{% else %}badge-hard{% endif %}">
+                    {{ recipe.difficulty|title }}
+                </span>
+                <h5 class="card-title mt-2">{{ recipe.title }}</h5>
+                <p class="card-text text-muted">{{ recipe.description|truncatewords:20 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
+                    </small>
+                    <small class="text-muted">
+                        Автор: {{ recipe.author.username }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <a href="{% url 'recipe-detail' recipe.slug %}" class="btn btn-outline-success btn-sm">Смотреть рецепт</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">Рецептов пока нет. Станьте первым, кто поделится!</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Categories -->
+<h2 class="mb-4">Просмотр по категориям</h2>
+<div class="row mb-5">
+    {% for category in categories %}
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ category.name }}</h5>
+                <p class="card-text text-muted small">{{ category.description|truncatewords:10 }}</p>
+                <a href="{% url 'category-posts' category.slug %}" class="btn btn-outline-success">Смотреть</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-muted">Категории недоступны.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Recent Recipes -->
+<h2 class="mb-4">Недавние рецепты</h2>
+<div class="row">
+    {% for recipe in recipes %}
+    <div class="col-md-4 col-lg-3 mb-4">
+        <div class="card recipe-card h-100">
+            {% if recipe.image %}
+            <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+            {% endif %}
+            <div class="card-body">
+                <h6 class="card-title">{{ recipe.title|truncatewords:5 }}</h6>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">{{ recipe.category.name }}</small>
+                    <small class="text-muted">{{ recipe.created_at|date:"d.m.Y" }}</small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent py-2">
+                <a href="{% url 'recipe-detail' recipe.slug %}" class="btn btn-sm btn-outline-success w-100">Смотреть</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">Рецептов пока нет. <a href="{% url 'create-recipe' %}">Создайте первый!</a></div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if recipes.has_other_pages %}
+<nav aria-label="Навигация по страницам рецептов">
+    <ul class="pagination justify-content-center mt-4">
+        {% if recipes.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">Первая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.previous_page_number }}">Предыдущая</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item disabled">
+            <span class="page-link">Страница {{ recipes.number }} из {{ recipes.paginator.num_pages }}</span>
+        </li>
+        
+        {% if recipes.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.next_page_number }}">Следующая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ recipes.paginator.num_pages }}">Последняя</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Результаты поиска{% if query %} по запросу "{{ query }}"{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="bi bi-search"></i> Результаты поиска
+                {% if query %}
+                    <small class="text-muted">по запросу "{{ query }}"</small>
+                {% endif %}
+            </h2>
+            
+            <!-- Search Form -->
+            <form action="{% url 'search-recipes' %}" method="GET" class="mb-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="Поиск рецептов...">
+                    <button class="btn btn-success" type="submit">Найти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if recipes %}
+            {% for recipe in recipes %}
+            <div class="col-md-4 mb-4">
+                <div class="card recipe-card h-100 shadow-sm">
+                    <img src="{{ recipe.image.url }}" class="card-img-top recipe-img" alt="{{ recipe.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'recipe-detail' recipe.slug %}" class="text-decoration-none text-dark">
+                                {{ recipe.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ recipe.description|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин
+                            </small>
+                            <span class="badge badge-{{ recipe.difficulty }}">{{ recipe.get_difficulty_display }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <small class="text-muted">
+                            <i class="bi bi-person"></i> 
+                            <a href="{% url 'user-recipes' recipe.author.username %}" class="text-decoration-none">
+                                {{ recipe.author.username }}
+                            </a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-emoji-frown"></i> Рецепты не найдены. Попробуйте другой поисковый запрос.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if recipes.has_other_pages %}
+<nav aria-label="Навигация по страницам рецептов">
+    <ul class="pagination justify-content-center mt-4">
+        {% if recipes.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page=1">Первая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ recipes.previous_page_number }}">Предыдущая</a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item disabled">
+            <span class="page-link">Страница {{ recipes.number }} из {{ recipes.paginator.num_pages }}</span>
+        </li>
+        
+        {% if recipes.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ recipes.next_page_number }}">Следующая</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ recipes.paginator.num_pages }}">Последняя</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
